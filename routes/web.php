@@ -13,11 +13,9 @@ use App\Http\Controllers\UrlController;
 |
 */
 
-Route::get('/', function () {
-    return view('welcome');
-});
 
-Route::get('/url', function () {
+
+Route::get('/', function () {
     return view('url_shortner');
 });
 
