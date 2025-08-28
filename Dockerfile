@@ -1,4 +1,4 @@
-# ========= Stage 1: Base (PHP + Extensions) =========
+# ========= Stage 1: Base =========
 FROM php:8.2-cli-alpine AS base
 
 RUN apk add --no-cache \
@@ -9,37 +9,41 @@ RUN apk add --no-cache \
     libzip-dev \
     libxml2-dev \
     oniguruma-dev \
-    && docker-php-ext-install pdo pdo_mysql mbstring xml zip
+    && docker-php-ext-install pdo pdo_mysql mbstring xml zip bcmath
+
+WORKDIR /app
 
 
-# ========= Stage 2: Builder (Composer + Vendor) =========
+# ========= Stage 2: Builder =========
 FROM base AS builder
 
-# Installing Composer
+# Install Composer
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
 WORKDIR /app
 
-# for caching
+# Copy composer files first (cache)
 COPY composer.json composer.lock ./
 
-# dependencies
 RUN composer install --no-dev --optimize-autoloader --no-scripts
+
+# Copy full app
 COPY . .
-RUN composer run-script post-autoload-dump
+
+RUN composer dump-autoload --optimize
 
 
-
-
-# ========= Stage 3: Runtime (Final Image) =========
+# ========= Stage 3: Runtime =========
 FROM base AS runtime
 
 WORKDIR /app
 
-# Copy app (with vendor) from builder
 COPY --from=builder /app /app
+
+# Laravel needs write access
+RUN chown -R www-data:www-data storage bootstrap/cache
 
 EXPOSE 8080
 
-CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=8080"]
 
+CMD sh -c "php artisan migrate --force && php artisan serve --host=0.0.0.0 --port=8080"
