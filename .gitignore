@@ -1,0 +1,17 @@
+أكيد. هذه هي الصيغة التي تحتاج إلى وضعها داخل ملف .gitignore:
+
+# Ignore dependencies directory
+node_modules/
+
+# Ignore local environment variables
+.env
+
+# Ignore the database file
+urls.db
+
+# Ignore local artifacts
+npm-debug.log*
+
+# Ignore any editor specific files
+.vscode/
+.idea/
