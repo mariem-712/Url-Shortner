@@ -1,4 +1,4 @@
-أكيد. هذه هي الصيغة التي تحتاج إلى وضعها داخل ملف .gitignore:
+
 
 # Ignore dependencies directory
 node_modules/
