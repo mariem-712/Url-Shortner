@@ -2,14 +2,13 @@ import express from "express";
 import bodyParser from "body-parser";
 import { nanoid } from "nanoid";
 import sqlite3 from "sqlite3";
+import client from 'prom-client';
 
 const app = express();
 const PORT = 3000;
 
-// استخدام متغير بيئة مع قيمة افتراضية
-const BASE_URL = process.env.BASE_URL || 'http://localhost:8888';
+const BASE_URL = process.env.BASE_URL || 'http://192.168.56.18:8888';
 
-// SQLite
 const db = new sqlite3.Database("./db/urls.db", (err) => {
     if (err) {
         console.error(err.message);
@@ -24,7 +23,19 @@ db.run(`
   )
 `);
 
+const shortenedUrlCounter = new client.Counter({
+  name: 'shortened_urls_total',
+  help: 'Total number of shortened URLs created'
+});
+
 app.use(bodyParser.json());
+
+// قم بتعريف الـendpoint الخاص بالـmetrics هنا
+app.get('/metrics', async (req, res) => {
+    res.set('Content-Type', client.register.contentType);
+    res.end(await client.register.metrics());
+});
+
 app.use(express.static("public"));
 
 app.post("/shorten", (req, res) => {
@@ -41,6 +52,7 @@ app.post("/shorten", (req, res) => {
             return res.status(500).json({ error: err.message });
         }
         res.json({ shortUrl });
+        shortenedUrlCounter.inc();
     });
 });
 
