@@ -30,7 +30,7 @@ const shortenedUrlCounter = new client.Counter({
 
 app.use(bodyParser.json());
 
-// قم بتعريف الـendpoint الخاص بالـmetrics هنا
+
 app.get('/metrics', async (req, res) => {
     res.set('Content-Type', client.register.contentType);
     res.end(await client.register.metrics());
@@ -73,3 +73,4 @@ app.get("/:id", (req, res) => {
 app.listen(PORT, () => {
     console.log(`🚀 Server running at http://localhost:${PORT}`);
 });
+
