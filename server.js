@@ -9,7 +9,6 @@ const app = express();
 const PORT = 3000;
 const BASE_URL = process.env.BASE_URL || "http://192.168.56.28:8888";
 
-// Database setup
 const db = new sqlite3.Database("./db/urls.db", (err) => {
   if (err) console.error(err.message);
   console.log("Connected to the urls database.");
@@ -21,6 +20,7 @@ db.run(`
     long_url TEXT NOT NULL
   )
 `);
+
 
 // Metrics
 const shortenedUrlCounter = new client.Counter({
@@ -41,22 +41,19 @@ const redirectFailCounter = new client.Counter({
 const requestLatency = new client.Histogram({
   name: "request_latency_seconds",
   help: "Request latency in seconds",
-  labelNames: ["operation"], // shorten or redirect
+  labelNames: ["operation"],
   buckets: [0.01, 0.05, 0.1, 0.5, 1, 2, 5],
 });
 
 app.use(bodyParser.json());
 
-// Metrics endpoint
 app.get("/metrics", async (req, res) => {
   res.set("Content-Type", client.register.contentType);
   res.end(await client.register.metrics());
 });
 
-// Static frontend
 app.use(express.static("public"));
 
-// Shorten endpoint: يقبل أي URL
 app.post("/shorten", (req, res) => {
   const endTimer = requestLatency.startTimer({ operation: "shorten" });
 
@@ -77,7 +74,6 @@ app.post("/shorten", (req, res) => {
   });
 });
 
-// Redirect endpoint: يتأكد من الوصولية قبل redirect
 app.get("/:id", async (req, res) => {
   const endTimer = requestLatency.startTimer({ operation: "redirect" });
   const { id } = req.params;
@@ -113,7 +109,6 @@ app.get("/:id", async (req, res) => {
   });
 });
 
-// Start server
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
