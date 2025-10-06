@@ -15,6 +15,7 @@
     "express": "^5.1.0",
     "nanoid": "^5.1.5",
     "sqlite3": "^5.1.7",
-    "prom-client": "^14.0.1"
+    "prom-client": "^14.0.1",
+    "node-fetch": "^3.3.2"
   }
 }
